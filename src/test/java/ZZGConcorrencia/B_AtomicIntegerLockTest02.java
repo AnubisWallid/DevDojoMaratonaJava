@@ -1,5 +1,6 @@
 package ZZGConcorrencia;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,9 +12,12 @@ class Counter2{
     void increment(){
         lock.lock();
         try{
+            lock.tryLock(3, TimeUnit.SECONDS);
             count++;
             atomicInteger.getAndIncrement();
-        }finally {
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
             lock.unlock();
         }
     }
