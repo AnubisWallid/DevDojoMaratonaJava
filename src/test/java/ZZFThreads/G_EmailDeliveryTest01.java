@@ -15,10 +15,8 @@ public class G_EmailDeliveryTest01 {
         while (true){
                     String seuEmail = JOptionPane.showInputDialog(
                     Thread.currentThread().getName() + "Entre com seu email");
-                    System.out.println("valor de entrada: " + seuEmail+".");
-                    System.out.println(seuEmail.isEmpty());
-                    System.out.println(seuEmail.isBlank());
-            if (seuEmail == null || seuEmail.isEmpty() || seuEmail.equals("")){
+                    System.out.println("valor de entrada: " + seuEmail);
+            if (seuEmail == null || seuEmail.isEmpty()){
                 members.close();
                 break;
             }

@@ -50,6 +50,7 @@ public class Members {
                     "{0}, Notifying all we are no longer picking up emails"
                     , Thread.currentThread().getName()
             ));
+            this.emails.notifyAll();
         }
     }
 }
