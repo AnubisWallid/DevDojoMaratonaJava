@@ -1,3 +1,5 @@
+package AATestesANDRascunhos;
+
 public class ClassMatrixProud {
     public static void main(String[] args) {
         double[][] A = {{2, 5}, {4, 8}};

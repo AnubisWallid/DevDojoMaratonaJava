@@ -5,7 +5,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 
 class FindAllsFilesJavaAndClass extends SimpleFileVisitor<Path>{
-    private PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*ClassMatrixProud*.{java,class}");
+    private PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:**/*AATestesANDRascunhos.ClassMatrixProud*.{java,class}");
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
