@@ -8,7 +8,7 @@
     <Loggers>
         <!-- avoid duplicated logs with additivity=false -->
 <!--        <Logger name="DevDojoMaratonaJava" level="error" additivity="false">-->
-        <Logger name="ZZIJDBC.A_ConnectionFactoryTest01" level="info" additivity="false">
+        <Logger name="ZZIJDBC" level="info" additivity="false">
             <AppenderRef ref="LogToConsole"/>
         </Logger>
         <Root level="error">

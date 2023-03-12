@@ -5,6 +5,7 @@ import ZZIJDBC.service.ProduceService;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @Log4j2
 public class A_ConnectionFactoryTest01 {
@@ -26,6 +27,8 @@ public class A_ConnectionFactoryTest01 {
 //        List<Producer> producerList = ProduceService.findByName("ProdutoraB");
 //        log.info("Producers found: {}",producerList);
 //        System.out.println(producerList);
-        ProduceService.showProducerMetaData();
+//        ProduceService.showProducerMetaData();
+        ProduceService.showDriverMetaData();
+        log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }

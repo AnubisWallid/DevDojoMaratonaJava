@@ -15,7 +15,9 @@ public class ProducerRepository {
     static {
         try {
             connection = ConnectionFactory.getConnection();
+            log.info("Connection Established");
         } catch (SQLException e) {
+            log.error("Error when trying to establish connection");
             throw new RuntimeException(e);
         }
     }
@@ -25,7 +27,9 @@ public class ProducerRepository {
     static {
         try {
             statement = connection.createStatement();
+            log.info("Statement Created");
         } catch (SQLException e) {
+            log.error("Error when trying to create the Statement");
             throw new RuntimeException(e);
         }
     }
@@ -133,7 +137,7 @@ public class ProducerRepository {
             ResultSetMetaData resultSetMetaData = rs.getMetaData();
             int columnCount = resultSetMetaData.getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
-                System.out.println("----------MetaDados----------");
+                System.out.println("----------MetaDadosProducer----------");
                 System.out.printf("%s: '%s',%n%s: '%s',%n%s: '%s',%n" +
                                   "%s: '%s',%n%s: '%s',%n%s: '%s',%n" +
                                   "%s: '%s',%n%s: '%s',%n",
@@ -152,33 +156,44 @@ public class ProducerRepository {
             log.error("Error when trying to get information");
         }
     }
-    public static void showDriverMetaData() {
-        log.info("Showing Driver MetaData");
+    public static void showDriverMetaData(){
+        log.info("Start - - - Showing Driver MetaData");
         String sql = "SELECT * FROM anime_store.producer";
         try {
-            ResultSet rs = statement.executeQuery(sql);
-            ResultSetMetaData resultSetMetaData = rs.getMetaData();
-            int columnCount = resultSetMetaData.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                System.out.println("----------MetaDados----------");
-                System.out.printf("%s: '%s',%n%s: '%s',%n%s: '%s',%n" +
-                                  "%s: '%s',%n%s: '%s',%n%s: '%s',%n" +
-                                  "%s: '%s',%n%s: '%s',%n",
-                        "CatalogName", resultSetMetaData.getCatalogName(i),
-                        "TableName", resultSetMetaData.getTableName(i),
-                        "ColumnLabel", resultSetMetaData.getColumnLabel(i),
-                        "ColumnClassName", resultSetMetaData.getColumnClassName(i),
-                        "ColumnDisplaySize", resultSetMetaData.getColumnDisplaySize(i),
-                        "ColumnTypeName", resultSetMetaData.getColumnTypeName(i),
-                        "ColumnType", resultSetMetaData.getColumnType(i),
-                        "SchemaName", resultSetMetaData.getSchemaName(i)
-                );
-            }
-            log.info("Information retrieved successfully");
+            DatabaseMetaData databaseMetaData = connection.getMetaData();
+            /*TYPE_FORWARD_ONLY -> leitura de cima para baixo*/
+            extractSupportType(databaseMetaData, "TYPE_FORWARD_ONLY");
+            /*TYPE_SCROLL_INSENSITIVE -> leitura up-down e down-up, MAS NÃO altera em tempo real*/
+            extractSupportType(databaseMetaData, "TYPE_SCROLL_INSENSITIVE");
+            /*TYPE_SCROLL_SENSITIVE -> leitura up-down e down-up, E altera em tempo real*/
+            extractSupportType(databaseMetaData, "TYPE_SCROLL_SENSITIVE");
+            log.info("End - - - Information Driver MetaData retrieved successfully");
         } catch (SQLException e) {
             log.error("Error when trying to get information");
         }
     }
+    private static void extractSupportType(DatabaseMetaData databaseMetaData, String type) throws SQLException {
+        int resultSetType;
+        if ("TYPE_FORWARD_ONLY".equals(type)) {
+            resultSetType = ResultSet.TYPE_FORWARD_ONLY;
+        } else if ("TYPE_SCROLL_INSENSITIVE".equals(type)) {
+            resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
+        } else if ("TYPE_SCROLL_SENSITIVE".equals(type)) {
+            resultSetType = ResultSet.TYPE_SCROLL_SENSITIVE;
+        }else {
+            log.error("Error when getiting ResultSetType by String");
+            return;
+        }
+        if (databaseMetaData.supportsResultSetType(resultSetType)){
+            if (databaseMetaData.supportsResultSetConcurrency(resultSetType,ResultSet.CONCUR_UPDATABLE)){
+                log.info("Supports '{}', and supports CONCUR_UPDATABLE",type);
+            } else if (databaseMetaData.supportsResultSetConcurrency(resultSetType,ResultSet.CONCUR_READ_ONLY)) {
+                log.info("Supports '{}', and supports CONCUR_READ_ONLY",type);
+
+            }
+        }else log.warn("No Supports '{}'",type);
+    }
+
 
     public static List<Producer> findAll() {
         log.info("Finding all Producers");

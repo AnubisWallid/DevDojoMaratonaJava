@@ -30,6 +30,9 @@ public class ProduceService {
     public static void showProducerMetaData() {
         ProducerRepository.showProducerMetaData();
     }
+    public static void showDriverMetaData() {
+        ProducerRepository.showDriverMetaData();
+    }
 
     public static void delete(Integer id) {
         requireValidId(id);
