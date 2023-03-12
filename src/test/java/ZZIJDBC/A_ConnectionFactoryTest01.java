@@ -28,7 +28,8 @@ public class A_ConnectionFactoryTest01 {
 //        log.info("Producers found: {}",producerList);
 //        System.out.println(producerList);
 //        ProduceService.showProducerMetaData();
-        ProduceService.showDriverMetaData();
+//        ProduceService.showDriverMetaData();
+//        ProduceService.showTypeScrollWorking();
         log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }

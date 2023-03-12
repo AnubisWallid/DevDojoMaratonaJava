@@ -108,20 +108,68 @@ public class ProducerRepository {
         String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
         List<Producer> producers = new ArrayList<>();
         try {
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                 /*int id = rs.getInt("id");
-                 String name = rs.getString("name");
+            ResultSet resultSet = statement.executeQuery(sql);
+            while (resultSet.next()) {
+                 /*int id = resultSet.getInt("id");
+                 String name = resultSet.getString("name");
                  producers.add(Producer.builder().id(id).name(name).build());*/
                 producers.add(Producer.builder()
-                        .id(rs.getInt("id"))
-                        .name(rs.getString("name"))
+                        .id(resultSet.getInt("id"))
+                        .name(resultSet.getString("name"))
                         .build());
             }
         } catch (SQLException e) {
             log.error("Error in finding generically");
         }
         return producers;
+    }
+
+    public static void showTypeScrollWorking() {
+        log.info("------Show Type Scroll Working ------");
+        String sql = "SELECT * FROM anime_store.producer order by id;";
+//        String sql = "SELECT * FROM anime_store.producer;";
+        try {
+            Statement statement1 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ResultSet resultSet = statement1.executeQuery(sql);
+            log.warn("-> -> is First? -> -> '{}'", resultSet.isFirst());/*Comando checa se é a primeira linha*/
+            log.info("Has First Row? '{}'", resultSet.first());/*Comando leva o cursor para a primeira linha*/
+            log.info("Row number '{}'", resultSet.getRow());
+            log.info(Producer.builder()
+                    .id(resultSet.getInt("id"))
+                    .name(resultSet.getString("name"))
+                    .build());
+            if (resultSet.absolute(5)) {/*Comando leva o cursor para uma linha específica*/
+                log.info("Has Absolute Row '{}'? 'true'", 5);
+                log.info("Row number '{}'", resultSet.getRow());
+                log.info(Producer.builder()
+                        .id(resultSet.getInt("id"))
+                        .name(resultSet.getString("name"))
+                        .build());
+            }
+            if (resultSet.relative(-2)) {/*Comando pula ou volta o cursor pela quantidade especificada*/
+                log.info("Has Relative Row? 'true', moved '-2' times");
+                log.info("Row number '{}'", resultSet.getRow());
+                log.info(Producer.builder()
+                        .id(resultSet.getInt("id"))
+                        .name(resultSet.getString("name"))
+                        .build());
+            }
+            log.warn("-> -> is Last? -> -> '{}'", resultSet.isLast());/*Comando checa se é a última linha*/
+            log.info("Last Row? '{}'", resultSet.last());/*Comando leva o cursor para a última linha*/
+            log.info("Row Number '{}'", resultSet.getRow());
+            log.info(Producer.builder()
+                    .id(resultSet.getInt("id"))
+                    .name(resultSet.getString("name"))
+                    .build());
+            log.info("Is After Last? '{}'", resultSet.isAfterLast());
+            log.info("Last row? '{}'", resultSet.last());
+            log.info("Next? '{}'", resultSet.next());
+            while (resultSet.previous()) {
+                log.info(Producer.builder().id(resultSet.getInt("id")).name(resultSet.getString("name")).build());
+            }
+        } catch (SQLException e) {
+            log.error("Erro in 'showTypeScrollWorking()'", e);
+        }
     }
 
     public static List<Producer> findByName(String name) {
@@ -133,8 +181,8 @@ public class ProducerRepository {
         log.info("Showing Produce MetaData");
         String sql = "SELECT * FROM anime_store.producer";
         try {
-            ResultSet rs = statement.executeQuery(sql);
-            ResultSetMetaData resultSetMetaData = rs.getMetaData();
+            ResultSet resultSet = statement.executeQuery(sql);
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             int columnCount = resultSetMetaData.getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
                 System.out.println("----------MetaDadosProducer----------");
@@ -153,25 +201,27 @@ public class ProducerRepository {
             }
             log.info("Information retrieved successfully");
         } catch (SQLException e) {
-            log.error("Error when trying to get information");
+            log.error("Error when trying to get information on ShowProducerMetaData");
         }
     }
-    public static void showDriverMetaData(){
+
+    public static void showDriverMetaData() {
         log.info("Start - - - Showing Driver MetaData");
         String sql = "SELECT * FROM anime_store.producer";
         try {
             DatabaseMetaData databaseMetaData = connection.getMetaData();
-            /*TYPE_FORWARD_ONLY -> leitura de cima para baixo*/
+            /*TYPE_FORWARD_ONLY -> Leitura de cima para baixo*/
             extractSupportType(databaseMetaData, "TYPE_FORWARD_ONLY");
-            /*TYPE_SCROLL_INSENSITIVE -> leitura up-down e down-up, MAS NÃO altera em tempo real*/
+            /*TYPE_SCROLL_INSENSITIVE -> Leitura up-down e down-up, MAS NÃO altera em tempo real*/
             extractSupportType(databaseMetaData, "TYPE_SCROLL_INSENSITIVE");
-            /*TYPE_SCROLL_SENSITIVE -> leitura up-down e down-up, E altera em tempo real*/
+            /*TYPE_SCROLL_SENSITIVE -> Leitura up-down e down-up, E altera em tempo real*/
             extractSupportType(databaseMetaData, "TYPE_SCROLL_SENSITIVE");
             log.info("End - - - Information Driver MetaData retrieved successfully");
         } catch (SQLException e) {
-            log.error("Error when trying to get information");
+            log.error("Error when trying to get information on ShowDriverMetaData");
         }
     }
+
     private static void extractSupportType(DatabaseMetaData databaseMetaData, String type) throws SQLException {
         int resultSetType;
         if ("TYPE_FORWARD_ONLY".equals(type)) {
@@ -180,20 +230,19 @@ public class ProducerRepository {
             resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
         } else if ("TYPE_SCROLL_SENSITIVE".equals(type)) {
             resultSetType = ResultSet.TYPE_SCROLL_SENSITIVE;
-        }else {
-            log.error("Error when getiting ResultSetType by String");
+        } else {
+            log.error("Error when getting ResultSetType by String");
             return;
         }
-        if (databaseMetaData.supportsResultSetType(resultSetType)){
-            if (databaseMetaData.supportsResultSetConcurrency(resultSetType,ResultSet.CONCUR_UPDATABLE)){
-                log.info("Supports '{}', and supports CONCUR_UPDATABLE",type);
-            } else if (databaseMetaData.supportsResultSetConcurrency(resultSetType,ResultSet.CONCUR_READ_ONLY)) {
-                log.info("Supports '{}', and supports CONCUR_READ_ONLY",type);
+        if (databaseMetaData.supportsResultSetType(resultSetType)) {
+            if (databaseMetaData.supportsResultSetConcurrency(resultSetType, ResultSet.CONCUR_UPDATABLE)) {
+                log.info("Supports '{}', and supports CONCUR_UPDATABLE", type);
+            } else if (databaseMetaData.supportsResultSetConcurrency(resultSetType, ResultSet.CONCUR_READ_ONLY)) {
+                log.info("Supports '{}', and supports CONCUR_READ_ONLY", type);
 
             }
-        }else log.warn("No Supports '{}'",type);
+        } else log.warn("No Supports '{}'", type);
     }
-
 
     public static List<Producer> findAll() {
         log.info("Finding all Producers");

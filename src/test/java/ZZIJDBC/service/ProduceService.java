@@ -30,6 +30,11 @@ public class ProduceService {
     public static void showProducerMetaData() {
         ProducerRepository.showProducerMetaData();
     }
+
+    public static void showTypeScrollWorking() {
+        ProducerRepository.showTypeScrollWorking();
+    }
+
     public static void showDriverMetaData() {
         ProducerRepository.showDriverMetaData();
     }
