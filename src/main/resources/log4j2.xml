@@ -2,16 +2,20 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{dd/MM/yy, HH:mm:ss.SSS} [%t] %-5level %logger{3.} - %msg%n"/>
         </Console>
     </Appenders>
     <Loggers>
         <!-- avoid duplicated logs with additivity=false -->
-        <Logger name="DevDojoMaratonaJava" level="info" additivity="false">
+<!--        <Logger name="DevDojoMaratonaJava" level="error" additivity="false">-->
+        <Logger name="ZZIJDBC.A_ConnectionFactoryTest01" level="info" additivity="false">
             <AppenderRef ref="LogToConsole"/>
         </Logger>
         <Root level="error">
             <AppenderRef ref="LogToConsole"/>
         </Root>
+<!--        <Root level="info">-->
+<!--            <AppenderRef ref="LogToConsole"/>-->
+<!--        </Root>-->
     </Loggers>
 </Configuration>
