@@ -248,5 +248,30 @@ public class ProducerRepository {
         log.info("Finding all Producers");
         return find("");
     }
+    public static List<Producer> findByNameAndToUpperCase(String name) {
+        String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
+        List<Producer> producers = new ArrayList<>();
+        try {
+            Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ResultSet resultSet = statement2.executeQuery(sql);
+            while (resultSet.next()) {
+                log.info("1 - Before updateString() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
+                resultSet.updateString("name",resultSet.getString("name").toUpperCase());
+                log.info("2 - After updateString() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
+                resultSet.updateRow();
+                log.info("3 - Before updateRow() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
+                Producer p = Producer.builder()
+                        .id(resultSet.getInt("id"))
+                        .name(resultSet.getString("name"))
+                        .build();
+                producers.add(p);
+                log.info("Producer: '{}'",p);
+            }
+        } catch (SQLException e) {
+            log.error("findByNameAndToUpperCase");
+        }
+        log.info("{}",producers);
+        return producers;
+    }
 }
 

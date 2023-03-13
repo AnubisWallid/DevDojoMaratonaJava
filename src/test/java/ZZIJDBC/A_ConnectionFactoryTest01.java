@@ -30,6 +30,7 @@ public class A_ConnectionFactoryTest01 {
 //        ProduceService.showProducerMetaData();
 //        ProduceService.showDriverMetaData();
 //        ProduceService.showTypeScrollWorking();
+        ProduceService.findByNameAndToUpperCase("B");
         log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }
