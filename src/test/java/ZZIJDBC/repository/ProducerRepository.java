@@ -291,6 +291,32 @@ public class ProducerRepository {
         return producers;
     }
 
+    public static List<Producer> findByNamePreparedStatement(String name) {
+        /*SQL injector -- String name = "B or X'='X";*/
+        String sql = "SELECT * FROM anime_store.producer where name like ?;";/* ? = wildcard*/
+        List<Producer> producers = new ArrayList<>();
+        try (PreparedStatement preparedStatement = createdPreparedStatement(sql,name);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                Producer producer = Producer.builder()
+                        .id(resultSet.getInt("id"))
+                        .name(resultSet.getString("name"))
+                        .build();
+                producers.add(producer);
+                log.info("Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            log.error("findByNamePreparedStatemente",e);
+        }
+        log.info("{}", producers);
+        return producers;
+    }
+    private static PreparedStatement createdPreparedStatement(String sql, String name) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, String.format("%%%s%%",name));
+        return preparedStatement;
+    }
+
 
     private static ResultSet getResultSet(String sql) throws SQLException {
         Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -310,9 +336,9 @@ public class ProducerRepository {
         String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
         try {
             ResultSet resultSet = getResultSet(sql);
-            while(resultSet.next()){
-            log.info("Row: with Producer '{}' deleted",resultSet.getString("name"));
-            resultSet.deleteRow();
+            while (resultSet.next()) {
+                log.info("Row: with Producer '{}' deleted", resultSet.getString("name"));
+                resultSet.deleteRow();
             }
         } catch (SQLException e) {
             log.error("Error in findByNameAndDelete ", e);

@@ -30,9 +30,10 @@ public class A_ConnectionFactoryTest01 {
 //        ProduceService.showProducerMetaData();
 //        ProduceService.showDriverMetaData();
 //        ProduceService.showTypeScrollWorking();
-//        ProduceService.findByNameAndInsertWhenNotFound("ProdutoraG");
-//        ProduceService.findByNameAndInsertWhenNotFound("ProdutoraH");
-        ProduceService.findByNameAndDelete("ProdutoraH0");
+//        List<Producer> producers = ProduceService.findByNameAndInsertWhenNotFound("ProdutoraG");
+//        List<Producer> producers = ProduceService.findByNameAndInsertWhenNotFound("ProdutoraH");
+//        List<Producer> producers = ProduceService.findByNameAndDelete("ProdutoraH0");
+        List<Producer> producers = ProduceService.findByNamePreparedStatement("aC");
         log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }
