@@ -74,10 +74,7 @@ public class ProducerRepository {
         String sql = "DELETE FROM `anime_store`.`producer` WHERE (`id` = '%d');".formatted(id);
         try {
             int rowsAffected = statement.executeUpdate(sql);
-            log.info("Deleted producer 'id={}' in the Database, rows affected '{}'",
-                    id,
-                    rowsAffected);
-
+            log.info("Deleted producer 'id={}' in the Database, rows affected '{}'", id, rowsAffected);
         } catch (SQLException e) {
             log.error("Error while trying to delete producer 'id ={}'", id, e);
         }
@@ -248,30 +245,79 @@ public class ProducerRepository {
         log.info("Finding all Producers");
         return find("");
     }
+
     public static List<Producer> findByNameAndToUpperCase(String name) {
         String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
         List<Producer> producers = new ArrayList<>();
         try {
-            Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-            ResultSet resultSet = statement2.executeQuery(sql);
+            ResultSet resultSet = getResultSet(sql);
             while (resultSet.next()) {
-                log.info("1 - Before updateString() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
-                resultSet.updateString("name",resultSet.getString("name").toUpperCase());
-                log.info("2 - After updateString() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
-                resultSet.updateRow();
-                log.info("3 - Before updateRow() - Row: '{}', Name: '{}'",resultSet.getRow(),resultSet.getString("name"));
-                Producer p = Producer.builder()
-                        .id(resultSet.getInt("id"))
-                        .name(resultSet.getString("name"))
-                        .build();
-                producers.add(p);
-                log.info("Producer: '{}'",p);
+                log.info("1 - Before updateString() - Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+                resultSet.updateString("name", resultSet.getString("name").toUpperCase());
+                log.info("2 - After updateString() - Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+//                resultSet.cancelRowUpdates();/*Cancela as alterações passadas*/
+                resultSet.updateRow();/*Para poder trabalhar com os dados atualizados*/
+                log.info("3 - Before updateRow() - Row: '{}', Name: '{}'",
+                        resultSet.getRow(), resultSet.getString("name"));
+                producers.add(getProducer(resultSet));
             }
         } catch (SQLException e) {
             log.error("findByNameAndToUpperCase");
         }
-        log.info("{}",producers);
+        log.info("{}", producers);
         return producers;
+    }
+
+    public static List<Producer> findByNameAndInsertWhenNotFound(String name) {
+        String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
+        List<Producer> producers = new ArrayList<>();
+        try {
+            ResultSet resultSet = getResultSet(sql);
+            if (resultSet.next()) return producers;
+            //Move o curso para uma linha temporaria;
+            resultSet.moveToInsertRow();
+            //Obetem a Etiqueta da coluna e adiciona a String passada no metodo;
+            resultSet.updateString("name", name);
+            //Insere a linha;
+            resultSet.insertRow();
+            log.info("Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+            producers.add(getProducer(resultSet));
+            log.info("Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+
+        } catch (SQLException e) {
+            log.error("findByNameAndInsertWhenNotFound");
+        }
+        log.info("{}", producers);
+        return producers;
+    }
+
+
+    private static ResultSet getResultSet(String sql) throws SQLException {
+        Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        return statement2.executeQuery(sql);
+    }
+
+    private static Producer getProducer(ResultSet resultSet) throws SQLException {
+        resultSet.beforeFirst();
+        resultSet.next();
+        return Producer.builder()
+                .id(resultSet.getInt("id"))
+                .name(resultSet.getString("name"))
+                .build();
+    }
+
+    public static void findByNameAndDelete(String name) {
+        String sql = "SELECT * FROM anime_store.producer where name like '%%%s%%';".formatted(name);
+        try {
+            ResultSet resultSet = getResultSet(sql);
+            while(resultSet.next()){
+            log.info("Row: with Producer '{}' deleted",resultSet.getString("name"));
+            resultSet.deleteRow();
+            }
+        } catch (SQLException e) {
+            log.error("Error in findByNameAndDelete ", e);
+            throw new RuntimeException(e);
+        }
     }
 }
 
