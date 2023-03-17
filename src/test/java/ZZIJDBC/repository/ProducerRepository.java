@@ -70,6 +70,25 @@ public class ProducerRepository {
         }
     }
 
+    public static void updatePreparedStatemante(Producer producer) {
+        try (PreparedStatement preparedStatement = preparedStatementUpdate(producer)) {
+            int rowsAffected = preparedStatement.executeUpdate();
+            log.info("Update producer from PreparedStatement '{}' in the Database, rows affected '{}'",
+                    producer.getName(),
+                    rowsAffected);
+        } catch (SQLException e) {
+            log.error("Error while trying to insert producer from PreparedStatement '{}'", producer.getName(), e);
+        }
+    }
+
+    private static PreparedStatement preparedStatementUpdate(Producer producer) throws SQLException {
+        String sql = "UPDATE `anime_store`.`producer` SET `name` = ? WHERE (`id` = ?);";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, producer.getName());
+        preparedStatement.setInt(2, producer.getId());
+        return preparedStatement;
+    }
+
     public static void delete(int id) {
         String sql = "DELETE FROM `anime_store`.`producer` WHERE (`id` = '%d');".formatted(id);
         try {
@@ -110,10 +129,7 @@ public class ProducerRepository {
                  /*int id = resultSet.getInt("id");
                  String name = resultSet.getString("name");
                  producers.add(Producer.builder().id(id).name(name).build());*/
-                producers.add(Producer.builder()
-                        .id(resultSet.getInt("id"))
-                        .name(resultSet.getString("name"))
-                        .build());
+                producers.add(getBuilderProducer(resultSet));
             }
         } catch (SQLException e) {
             log.error("Error in finding generically");
@@ -131,42 +147,37 @@ public class ProducerRepository {
             log.warn("-> -> is First? -> -> '{}'", resultSet.isFirst());/*Comando checa se é a primeira linha*/
             log.info("Has First Row? '{}'", resultSet.first());/*Comando leva o cursor para a primeira linha*/
             log.info("Row number '{}'", resultSet.getRow());
-            log.info(Producer.builder()
-                    .id(resultSet.getInt("id"))
-                    .name(resultSet.getString("name"))
-                    .build());
+            log.info(getBuilderProducer(resultSet));
             if (resultSet.absolute(5)) {/*Comando leva o cursor para uma linha específica*/
                 log.info("Has Absolute Row '{}'? 'true'", 5);
                 log.info("Row number '{}'", resultSet.getRow());
-                log.info(Producer.builder()
-                        .id(resultSet.getInt("id"))
-                        .name(resultSet.getString("name"))
-                        .build());
+                log.info(getBuilderProducer(resultSet));
             }
             if (resultSet.relative(-2)) {/*Comando pula ou volta o cursor pela quantidade especificada*/
                 log.info("Has Relative Row? 'true', moved '-2' times");
                 log.info("Row number '{}'", resultSet.getRow());
-                log.info(Producer.builder()
-                        .id(resultSet.getInt("id"))
-                        .name(resultSet.getString("name"))
-                        .build());
+                log.info(getBuilderProducer(resultSet));
             }
             log.warn("-> -> is Last? -> -> '{}'", resultSet.isLast());/*Comando checa se é a última linha*/
             log.info("Last Row? '{}'", resultSet.last());/*Comando leva o cursor para a última linha*/
             log.info("Row Number '{}'", resultSet.getRow());
-            log.info(Producer.builder()
-                    .id(resultSet.getInt("id"))
-                    .name(resultSet.getString("name"))
-                    .build());
+            log.info(getBuilderProducer(resultSet));
             log.info("Is After Last? '{}'", resultSet.isAfterLast());
             log.info("Last row? '{}'", resultSet.last());
             log.info("Next? '{}'", resultSet.next());
             while (resultSet.previous()) {
-                log.info(Producer.builder().id(resultSet.getInt("id")).name(resultSet.getString("name")).build());
+                log.info(getBuilderProducer(resultSet));
             }
         } catch (SQLException e) {
             log.error("Erro in 'showTypeScrollWorking()'", e);
         }
+    }
+
+    private static Producer getBuilderProducer(ResultSet resultSet) throws SQLException {
+        return Producer.builder()
+                .id(resultSet.getInt("id"))
+                .name(resultSet.getString("name"))
+                .build();
     }
 
     public static List<Producer> findByName(String name) {
@@ -292,31 +303,51 @@ public class ProducerRepository {
     }
 
     public static List<Producer> findByNamePreparedStatement(String name) {
-        /*SQL injector -- String name = "B or X'='X";*/
-        String sql = "SELECT * FROM anime_store.producer where name like ?;";/* ? = wildcard*/
         List<Producer> producers = new ArrayList<>();
-        try (PreparedStatement preparedStatement = createdPreparedStatement(sql,name);
+        try (PreparedStatement preparedStatement = preparedStatementFindByName(name);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                Producer producer = Producer.builder()
-                        .id(resultSet.getInt("id"))
-                        .name(resultSet.getString("name"))
-                        .build();
+                Producer producer = getBuilderProducer(resultSet);
                 producers.add(producer);
                 log.info("Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
             }
         } catch (SQLException e) {
-            log.error("findByNamePreparedStatemente",e);
+            log.error("findByNamePreparedStatemente", e);
         }
         log.info("{}", producers);
         return producers;
     }
-    private static PreparedStatement createdPreparedStatement(String sql, String name) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement(sql);
-        preparedStatement.setString(1, String.format("%%%s%%",name));
-        return preparedStatement;
+
+    public static List<Producer> findByNameCallableStatement(String name) {
+        List<Producer> producers = new ArrayList<>();
+        try (CallableStatement callableStatement = callableStatementFindByName(name);
+             ResultSet resultSet = callableStatement.executeQuery()) {
+            while (resultSet.next()) {
+                Producer producer = getBuilderProducer(resultSet);
+                producers.add(producer);
+                log.info("Row: '{}', Name: '{}'", resultSet.getRow(), resultSet.getString("name"));
+            }
+        } catch (SQLException e) {
+            log.error("Error in findByNameCallableStatement", e);
+        }
+        log.info("{}", producers);
+        return producers;
     }
 
+    private static CallableStatement callableStatementFindByName(String name) throws SQLException {
+        String sql = "CALL `anime_store`.`sp_get_producer_by_name`(?);";
+        CallableStatement callableStatement = connection.prepareCall(sql);
+        callableStatement.setString(1, String.format("%%%s%%", name));
+        return callableStatement;
+    }
+
+    private static PreparedStatement preparedStatementFindByName(String name) throws SQLException {
+        /*SQL injector -- String name = "B or X'='X";*/
+        String sql = "SELECT * FROM anime_store.producer where name like ?;";/* ? = wildcard*/
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setString(1, String.format("%%%s%%", name));
+        return preparedStatement;
+    }
 
     private static ResultSet getResultSet(String sql) throws SQLException {
         Statement statement2 = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -326,10 +357,7 @@ public class ProducerRepository {
     private static Producer getProducer(ResultSet resultSet) throws SQLException {
         resultSet.beforeFirst();
         resultSet.next();
-        return Producer.builder()
-                .id(resultSet.getInt("id"))
-                .name(resultSet.getString("name"))
-                .build();
+        return getBuilderProducer(resultSet);
     }
 
     public static void findByNameAndDelete(String name) {

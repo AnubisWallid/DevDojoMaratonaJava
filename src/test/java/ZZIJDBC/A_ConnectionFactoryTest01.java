@@ -33,7 +33,10 @@ public class A_ConnectionFactoryTest01 {
 //        List<Producer> producers = ProduceService.findByNameAndInsertWhenNotFound("ProdutoraG");
 //        List<Producer> producers = ProduceService.findByNameAndInsertWhenNotFound("ProdutoraH");
 //        List<Producer> producers = ProduceService.findByNameAndDelete("ProdutoraH0");
-        List<Producer> producers = ProduceService.findByNamePreparedStatement("aC");
+//        List<Producer> producers = ProduceService.findByNamePreparedStatement("aC");
+//        Producer producerAlternate = Producer.builder().id(3).name("ProdutoraCCC").build();
+//        ProduceService.updatePreparedStatemante(producerAlternate);
+//        List<Producer> producers = ProduceService.findByNameCallableStatement("C");
         log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }

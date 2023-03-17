@@ -19,6 +19,11 @@ public class ProduceService {
         ProducerRepository.update(producer);
     }
 
+    public static void updatePreparedStatemante(Producer producer) {
+        requireValidId(producer.getId());
+        ProducerRepository.updatePreparedStatemante(producer);
+    }
+
     public static List<Producer> findAll() {
         return ProducerRepository.findAll();
     }
@@ -34,9 +39,15 @@ public class ProduceService {
     public static List<Producer> findByNameAndInsertWhenNotFound(String name) {
         return ProducerRepository.findByNameAndInsertWhenNotFound(name);
     }
+
     public static List<Producer> findByNamePreparedStatement(String name) {
         return ProducerRepository.findByNamePreparedStatement(name);
     }
+
+    public static List<Producer> findByNameCallableStatement(String name) {
+        return ProducerRepository.findByNameCallableStatement(name);
+    }
+
     public static void findByNameAndDelete(String name) {
         ProducerRepository.findByNameAndDelete(name);
     }
