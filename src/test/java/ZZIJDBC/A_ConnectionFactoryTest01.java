@@ -37,6 +37,7 @@ public class A_ConnectionFactoryTest01 {
 //        Producer producerAlternate = Producer.builder().id(3).name("ProdutoraCCC").build();
 //        ProduceService.updatePreparedStatemante(producerAlternate);
 //        List<Producer> producers = ProduceService.findByNameCallableStatement("C");
+
         log.info("Logger '{}'", Logger.getLogger(A_ConnectionFactoryTest01.class.getName()).getName());
     }
 }
