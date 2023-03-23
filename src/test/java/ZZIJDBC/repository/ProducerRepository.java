@@ -287,7 +287,7 @@ public class ProducerRepository {
             if (resultSet.next()) return producers;
             //Move o curso para uma linha temporaria;
             resultSet.moveToInsertRow();
-            //Obetem a Etiqueta da coluna e adiciona a String passada no metodo;
+            //Obtem a Etiqueta da coluna e adiciona a String passada no metodo;
             resultSet.updateString("name", name);
             //Insere a linha;
             resultSet.insertRow();
