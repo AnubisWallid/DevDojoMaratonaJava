@@ -11,6 +11,9 @@
         <Logger name="ZZIJDBC" level="info" additivity="false">
             <AppenderRef ref="LogToConsole"/>
         </Logger>
+        <Logger name="ZZJCrud" level="info" additivity="false">
+            <AppenderRef ref="LogToConsole"/>
+        </Logger>
         <Root level="error">
             <AppenderRef ref="LogToConsole"/>
         </Root>
